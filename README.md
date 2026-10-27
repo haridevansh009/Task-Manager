@@ -1,3 +1,107 @@
+# Task Management App — Frontend
+
+A modern, responsive task management application built to help users organize, manage, and track their tasks efficiently. The frontend provides multiple task visualization modes, allowing users to manage their workflow according to their preferences.
+
+## 🚀 Features
+
+- **List View:** View and manage tasks in a structured list.
+- **Grid View:** Display tasks using a clean card-based layout.
+- **Kanban Board:** Organize tasks into workflow columns and track their progress.
+- **Section View:** Group tasks by status, such as To Do, In Progress, and Done.
+- **Task Management:** Create, view, edit, and delete tasks.
+- **Responsive UI:** Designed to work across desktop, tablet, and mobile devices.
+- **Status Tracking:** Monitor task progress through different workflow stages.
+- **Reusable Components:** Maintainable and modular frontend architecture.
+
+## 🛠️ Tech Stack
+
+- React.js
+- JavaScript
+- HTML5
+- CSS3
+- Vite
+- REST API integration
+
+## 📁 Project Structure
+
+```text
+frontend/
+├── public/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── assets/
+│   ├── services/
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── .env.example
+├── package.json
+├── vite.config.js
+└── README.md
+```
+
+*Note: Adjust the folder structure to match your actual project files.*
+
+## ⚙️ Getting Started
+
+### 1. Clone the Repository
+
+```bash
+git clone YOUR_REPOSITORY_URL
+cd frontend
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env` file in the frontend root directory if your application requires environment variables.
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+Replace the URL with your actual backend API address.
+
+### 4. Start the Development Server
+
+```bash
+npm run dev
+```
+
+Open the local URL displayed in your terminal, usually `http://localhost:5173`.
+
+## 🔗 Backend Integration
+
+The frontend can communicate with the backend through REST APIs to perform task-related operations. Ensure the backend server is running and the API URL is configured correctly.
+
+## 🔐 Security Notes
+
+- Never store private API keys or backend secrets in frontend environment variables.
+- Validate user input before submitting data.
+- Use HTTPS in production.
+- Keep authentication tokens and sensitive information secure.
+
+## 📌 Future Improvements
+
+- Drag-and-drop task management.
+- Search, filtering, and sorting.
+- Task deadlines and priority labels.
+- User authentication and personalized dashboards.
+- Real-time task updates.
+
+## 👩‍💻 Development
+
+This project is designed with a component-based architecture to make the interface easier to maintain, extend, and improve.
+
+---
+
+**Built with React and Vite.**
 # Taskflow Backend
 
 Node.js + Express + MongoDB (Mongoose), JWT auth, server-side SLA tracking.
