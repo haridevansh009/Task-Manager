@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Taskflow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#f2f4f1;--sf:#fff;--ink:#14211f;--mu:#5d6b68;--ln:#d9dfdb;--ac:#0f6b5c;--acs:#dcefe9;--hi:#c2410c;--md:#a16207;--lo:#2563eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1715;--sf:#18221f;--ink:#e8efec;--mu:#9aaba6;--ln:#2b3a36;--ac:#3fb59f;--acs:#183530;--hi:#fb923c;--md:#facc15;--lo:#60a5fa}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Bricolage Grotesque',system-ui,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600;cursor:pointer}
+.btn.g{background:transparent;color:var(--ink);border:1px solid var(--ln)}
+input,select,textarea{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:9px 11px;width:100%}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.auth{max-width:400px;margin:8vh auto;padding:28px;background:var(--sf);border:1px solid var(--ln);border-radius:14px}
+.auth h1{font-size:34px;font-weight:800;margin:0 0 4px}.auth p{color:var(--mu);margin:0 0 18px}
+.auth label{display:block;margin:10px 0 4px;font-weight:600;font-size:13px}.auth .btn{width:100%;margin-top:16px}
+.tabs{display:flex;gap:16px;margin-bottom:14px}.tabs a{cursor:pointer;color:var(--mu);padding-bottom:4px}.tabs a.on{color:var(--ink);border-bottom:2px solid var(--ac);font-weight:600}
+.msg{margin-top:12px;color:var(--ac);font-size:13px}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--sf);border-bottom:1px solid var(--ln)}
+header b{font-size:22px;font-weight:800}header span{color:var(--mu);margin-right:12px}
+main{padding:20px 24px;max-width:1200px;margin:auto}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.st{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:14px}.st small{color:var(--mu)}.st div{font-size:28px;font-weight:800}
+.fl{display:grid;grid-template-columns:2fr repeat(3,1fr) auto;gap:10px;margin:18px 0}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
+.col{background:color-mix(in srgb,var(--ln) 45%,transparent);border-radius:12px;padding:10px;min-height:180px}
+.col.over{outline:2px dashed var(--ac)}.col h3{margin:4px 6px 10px;font-size:15px;display:flex;justify-content:space-between}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px;margin-bottom:10px;cursor:grab;border-left:4px solid var(--lo)}
+.card.High{border-left-color:var(--hi)}.card.Medium{border-left-color:var(--md)}.card.dragging{opacity:.4}
+.card h4{margin:0 0 4px;font-size:15px}.card p{margin:0 0 8px;color:var(--mu);font-size:13px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--mu)}
+.sla{margin-top:8px;font-size:12px;background:var(--acs);color:var(--ac);border-radius:6px;padding:4px 8px;font-weight:600}
+.act{margin-top:8px;display:flex;gap:12px;font-size:12px}.act a{cursor:pointer;color:var(--ac)}.act a.d{color:var(--hi)}
+.empty{color:var(--mu);font-size:13px;padding:8px 6px}
+dialog{border:1px solid var(--ln);border-radius:14px;background:var(--sf);color:var(--ink);width:min(440px,92vw);padding:22px}
+dialog::backdrop{background:rgba(0,0,0,.45)}dialog label{display:block;margin:10px 0 4px;font-size:13px;font-weight:600}
+.row{display:flex;gap:10px}.bar{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}.fl{grid-template-columns:1fr 1fr}.board{grid-template-columns:1fr}}
+</style></head><body><div id="app"></div>
+<dialog id="dlg"><form method="dialog" id="f"><h2 id="dt" style="margin:0 0 6px"></h2>
+<label>Title</label><input id="t" required>
+<label>Description</label><textarea id="d" rows="2"></textarea>
+<div class="row"><div style="flex:1"><label>Priority</label><select id="p"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+<div style="flex:1"><label>Status</label><select id="s"><option value="TODO">To do</option><option value="IN_PROGRESS">In progress</option><option value="DONE">Done</option></select></div></div>
+<div class="row"><div style="flex:1"><label>Assignee</label><input id="a"></div><div style="flex:1"><label>Due date</label><input id="du" type="date"></div></div>
+<div class="bar"><button type="button" class="btn g" id="cx">Cancel</button><button class="btn">Save task</button></div></form></dialog>
+<script>
+const H=3600000,D=24*H,ST={TODO:'To do',IN_PROGRESS:'In progress',DONE:'Done'},now=Date.now();
+const mk=(id,title,description,status,priority,assignee,due,a,b,c)=>({id,title,description,status,priority,assignee,dueDate:due,createdAt:now-(a+b+c),tm:{TODO:a,IN_PROGRESS:b,DONE:c},since:now});
+let tasks=[
+mk(1,'Design login screen','Signup, login and forgot password flow','DONE','High','Prashant','2026-10-20',4*H,2*D,3*H),
+mk(2,'Connect tasks API','GET and PATCH endpoints with filters','IN_PROGRESS','High','Neha','2026-10-30',6*H,1.5*D,0),
+mk(3,'Drag and drop board','Move tasks between status columns','IN_PROGRESS','Medium','Amit','2026-11-02',2*H,20*H,0),
+mk(4,'Stats cards','Total, per-status count and average SLA','TODO','Medium','Neha','2026-11-05',1.2*D,0,0),
+mk(5,'Reset password page','Token based reset link','TODO','Low','Amit','2026-11-08',8*H,0,0),
+mk(6,'Search and filters','Search, priority, assignee','DONE','Medium','Prashant','2026-10-18',3*H,1*D,10*H),
+mk(7,'Write README','API contract for the frontend','TODO','Low','Prashant','2026-11-10',5*H,0,0)];
+let user=null,mode='login',f={q:'',status:'',priority:'',assignee:''},edit=null,drag=null,nid=8,msg='';
+const $=s=>document.querySelector(s),fm=ms=>{const h=Math.floor(ms/H);return h>=24?Math.floor(h/24)+'d '+h%24+'h':h+'h'};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cur=t=>t.tm[t.status]+(t.status==='DONE'?0:Date.now()-t.since),tot=t=>t.tm.TODO+t.tm.IN_PROGRESS+t.tm.DONE+(t.status==='DONE'?0:Date.now()-t.since);
+const vis=()=>tasks.filter(t=>(!f.q||(t.title+t.description).toLowerCase().includes(f.q.toLowerCase()))&&(!f.status||t.status===f.status)&&(!f.priority||t.priority===f.priority)&&(!f.assignee||t.assignee===f.assignee));
+function render(){const A=$('#app');if(!user){A.innerHTML=`<div class="auth"><h1>Taskflow</h1><p>Plan work, track it, finish it.</p>
+<div class="tabs"><a data-m="login" class="${mode=='login'?'on':''}">Log in</a><a data-m="signup" class="${mode=='signup'?'on':''}">Sign up</a><a data-m="forgot" class="${mode=='forgot'?'on':''}">Forgot password</a></div>
+<form id="af">${mode=='signup'?'<label>Name</label><input id="an" value="Prashant Sharma" required>':''}<label>Email</label><input id="ae" type="email" value="prashantsharmaagra27@gmail.com" required>
+${mode=='forgot'?'':'<label>Password</label><input id="ap" type="password" value="demo1234" required>'}
+<button class="btn">${{login:'Log in',signup:'Create account',forgot:'Send reset link'}[mode]}</button></form><div class="msg">${msg}</div></div>`;
+A.querySelectorAll('.tabs a').forEach(a=>a.onclick=()=>{mode=a.dataset.m;msg='';render()});
+$('#af').onsubmit=e=>{e.preventDefault();if(mode=='forgot'){msg='Reset link sent. Check your email.';render();return}user={name:mode=='signup'?$('#an').value:'Prashant Sharma'};render()};return}
+const v=vis(),as=[...new Set(tasks.map(t=>t.assignee))],all=tasks,avg=all.length?all.reduce((s,t)=>s+tot(t),0)/all.length:0,n=s=>all.filter(t=>t.status===s).length;
+A.innerHTML=`<header><b>Taskflow</b><div><span>${esc(user.name)}</span><button class="btn g" id="lo">Log out</button></div></header><main>
+<div class="stats"><div class="st"><small>Total tasks</small><div>${all.length}</div></div><div class="st"><small>To do</small><div>${n('TODO')}</div></div><div class="st"><small>In progress</small><div>${n('IN_PROGRESS')}</div></div><div class="st"><small>Done · avg SLA ${fm(avg)}</small><div>${n('DONE')}</div></div></div>
+<div class="fl"><input id="fq" placeholder="Search tasks" value="${esc(f.q)}"><select id="fs"><option value="">All statuses</option>${Object.entries(ST).map(([k,l])=>`<option value="${k}" ${f.status==k?'selected':''}>${l}</option>`).join('')}</select>
+<select id="fp"><option value="">All priorities</option>${['High','Medium','Low'].map(p=>`<option ${f.priority==p?'selected':''}>${p}</option>`).join('')}</select>
+<select id="fa"><option value="">All assignees</option>${as.map(a=>`<option ${f.assignee==a?'selected':''}>${esc(a)}</option>`).join('')}</select><button class="btn" id="nt">New task</button></div>
+<div class="board">${Object.entries(ST).map(([k,l])=>{const c=v.filter(t=>t.status===k);return`<div class="col" data-s="${k}"><h3>${l}<span>${c.length}</span></h3>${c.map(t=>`<div class="card ${t.priority}" draggable="true" data-id="${t.id}"><h4>${esc(t.title)}</h4><p>${esc(t.description)}</p>
+<div class="meta"><span>${t.priority} priority</span><span>${esc(t.assignee||'Unassigned')}</span><span>Due ${t.dueDate||'not set'}</span></div>
+<div class="sla">In this stage ${fm(cur(t))} · total ${fm(tot(t))}</div><div class="act"><a data-e="${t.id}">Edit</a><a class="d" data-x="${t.id}">Delete</a></div></div>`).join('')||'<div class="empty">No tasks here. Drag one in or add a new task.</div>'}</div>`}).join('')}</div></main>`;
+$('#lo').onclick=()=>{user=null;render()};
+[['fq','q'],['fs','status'],['fp','priority'],['fa','assignee']].forEach(([i,k])=>$('#'+i).onchange=$('#'+i).oninput=e=>{f[k]=e.target.value;const p=e.target.selectionStart;render();if(i=='fq'){const x=$('#fq');x.focus();x.setSelectionRange(p,p)}});
+$('#nt').onclick=()=>open(null);
+A.querySelectorAll('[data-e]').forEach(a=>a.onclick=()=>open(tasks.find(t=>t.id==a.dataset.e)));
+A.querySelectorAll('[data-x]').forEach(a=>a.onclick=()=>{tasks=tasks.filter(t=>t.id!=a.dataset.x);render()});
+A.querySelectorAll('.card').forEach(c=>{c.ondragstart=()=>{drag=+c.dataset.id;c.classList.add('dragging')};c.ondragend=()=>c.classList.remove('dragging')});
+A.querySelectorAll('.col').forEach(c=>{c.ondragover=e=>{e.preventDefault();c.classList.add('over')};c.ondragleave=()=>c.classList.remove('over');c.ondrop=e=>{e.preventDefault();move(drag,c.dataset.s)}})}
+function move(id,s){const t=tasks.find(x=>x.id==id);if(!t||t.status===s)return render();if(t.status!=='DONE')t.tm[t.status]+=Date.now()-t.since;t.status=s;t.since=Date.now();render()}
+function open(t){edit=t;$('#dt').textContent=t?'Edit task':'New task';$('#t').value=t?.title||'';$('#d').value=t?.description||'';$('#p').value=t?.priority||'Medium';$('#s').value=t?.status||'TODO';$('#a').value=t?.assignee||'';$('#du').value=t?.dueDate||'';$('#dlg').showModal()}
+$('#cx').onclick=()=>$('#dlg').close();
+$('#f').onsubmit=()=>{const o={title:$('#t').value,description:$('#d').value,priority:$('#p').value,assignee:$('#a').value,dueDate:$('#du').value};const s=$('#s').value;
+if(edit){Object.assign(edit,o);if(edit.status!==s){move(edit.id,s);return}}else tasks.push({id:nid++,...o,status:s,createdAt:Date.now(),tm:{TODO:0,IN_PROGRESS:0,DONE:0},since:Date.now()});render()};
+setInterval(()=>{if(user&&!$('#dlg').open&&!drag)render();drag=null},60000);render();
+</script></body></html>
